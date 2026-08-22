@@ -123,3 +123,25 @@
     color: var(--color-text-muted);
     margin-top: 4px;
 }
+
+.change-denoms {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.change-denoms .change-denom-btn {
+    font-variant-numeric: tabular-nums;
+}
+
+#change-result {
+    font-variant-numeric: tabular-nums;
+}
+
+#change-result.negative {
+    color: var(--color-danger);
+}
+
+#change-result.positive {
+    color: var(--color-primary-dark);
+}

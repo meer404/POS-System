@@ -3,6 +3,8 @@ const PosPage = (() => {
     let searchDebounceTimer = null;
     let barcodeDebounceTimer = null;
 
+    const CHANGE_DENOMINATIONS = [250, 500, 1000, 5000, 10000, 25000, 50000];
+
     function el(id) {
         return document.getElementById(id);
     }
@@ -45,7 +47,7 @@ const PosPage = (() => {
         renderTotals();
     }
 
-    function renderTotals() {
+    function computeFinalTotal() {
         const subtotal = State.cartTotal();
         const discountValue = parseInt(el('discount-value').value, 10) || 0;
         let discount;
@@ -55,10 +57,12 @@ const PosPage = (() => {
             discount = discountValue;
         }
         discount = Math.max(0, Math.min(subtotal, discount));
-        const final = subtotal - discount;
+        return subtotal - discount;
+    }
 
-        el('pos-subtotal').textContent = formatMoney(subtotal);
-        el('pos-final-total').textContent = formatMoney(final);
+    function renderTotals() {
+        el('pos-subtotal').textContent = formatMoney(State.cartTotal());
+        el('pos-final-total').textContent = formatMoney(computeFinalTotal());
     }
 
     async function addProductToCart(product) {
@@ -256,6 +260,70 @@ const PosPage = (() => {
         }
     }
 
+    function showGiveChangeDialog() {
+        const finalTotal = computeFinalTotal();
+        const overlay = Modal.open(
+            `
+            <div class="modal-header">
+                <h2>گەڕاندنەوەی پارە</h2>
+                <img class="icon" src="assets/icons/receipt.svg" alt="" />
+            </div>
+            <div class="pos-summary-row">
+                <span class="text-muted">کۆی کۆتایی فرۆشتن</span>
+                <span>${formatMoney(finalTotal)}</span>
+            </div>
+            <div class="form-group mt-10">
+                <label>پارەی وەرگیراو لە کڕیار</label>
+                <input type="number" id="change-received-input" min="0" value="0" class="input-lg" />
+            </div>
+            <div class="change-denoms mt-10">
+                ${CHANGE_DENOMINATIONS.map(
+                    (d) => `<button type="button" class="btn btn-outline btn-sm change-denom-btn" data-value="${d}">${formatNumber(d)}</button>`
+                ).join('')}
+            </div>
+            <button type="button" class="btn btn-ghost btn-sm mt-10" id="change-reset-btn">
+                <img class="icon icon-sm" src="assets/icons/arrow-repeat.svg" alt="" /> سڕینەوە
+            </button>
+            <div class="pos-summary-row total mt-20">
+                <span>پارەی گەڕاندنەوە</span>
+                <span id="change-result">٠</span>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" id="change-close-btn">داخستن</button>
+            </div>
+            `,
+            { wide: false }
+        );
+
+        const receivedInput = overlay.querySelector('#change-received-input');
+        const resultEl = overlay.querySelector('#change-result');
+
+        function updateResult() {
+            const received = parseInt(receivedInput.value, 10) || 0;
+            const change = received - finalTotal;
+            resultEl.textContent = formatMoney(change);
+            resultEl.classList.toggle('negative', change < 0);
+            resultEl.classList.toggle('positive', change >= 0);
+        }
+
+        receivedInput.addEventListener('input', updateResult);
+        overlay.querySelectorAll('.change-denom-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const current = parseInt(receivedInput.value, 10) || 0;
+                receivedInput.value = current + parseInt(btn.dataset.value, 10);
+                updateResult();
+            });
+        });
+        overlay.querySelector('#change-reset-btn').addEventListener('click', () => {
+            receivedInput.value = 0;
+            updateResult();
+        });
+        overlay.querySelector('#change-close-btn').addEventListener('click', () => Modal.close(overlay));
+
+        updateResult();
+        receivedInput.focus();
+    }
+
     async function handleClearCart() {
         if (State.cart.length === 0) return;
         const confirmed = await Modal.confirm('سەبەتەکە بەتاڵ بکرێت؟');
@@ -298,6 +366,7 @@ const PosPage = (() => {
         el('discount-mode-flat').addEventListener('click', () => setDiscountMode('flat'));
         el('discount-mode-percent').addEventListener('click', () => setDiscountMode('percent'));
         el('pos-complete-sale-btn').addEventListener('click', handleCompleteSale);
+        el('pos-give-change-btn').addEventListener('click', showGiveChangeDialog);
         el('pos-clear-cart-btn').addEventListener('click', handleClearCart);
 
         renderCart();
