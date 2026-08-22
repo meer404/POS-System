@@ -1,0 +1,98 @@
+"""Expired / near-expiry batch queries, Mark as Loss, and supplier returns."""
+import sqlite3
+
+from backend.utils import row_to_dict, rows_to_list
+
+
+def list_expired(conn: sqlite3.Connection) -> list[dict]:
+    rows = conn.execute(
+        """
+        SELECT sb.*, p.name AS product_name, p.unit
+        FROM stock_batches sb JOIN products p ON p.id = sb.product_id
+        WHERE sb.status = 'active' AND sb.quantity > 0
+          AND sb.expiry_date IS NOT NULL AND sb.expiry_date < date('now')
+        ORDER BY sb.expiry_date ASC
+        """
+    ).fetchall()
+    return rows_to_list(rows)
+
+
+def list_near_expiry(conn: sqlite3.Connection, days: int = 7) -> list[dict]:
+    rows = conn.execute(
+        """
+        SELECT sb.*, p.name AS product_name, p.unit
+        FROM stock_batches sb JOIN products p ON p.id = sb.product_id
+        WHERE sb.status = 'active' AND sb.quantity > 0
+          AND sb.expiry_date IS NOT NULL
+          AND sb.expiry_date BETWEEN date('now') AND date('now', ?)
+        ORDER BY sb.expiry_date ASC
+        """,
+        (f"+{days} days",),
+    ).fetchall()
+    return rows_to_list(rows)
+
+
+def _adjust_batch(conn: sqlite3.Connection, batch_id: int, quantity: int, reason: str) -> dict:
+    if quantity <= 0:
+        raise ValueError("بڕ نابێت لە سفر کەمتر بێت")
+    batch = conn.execute("SELECT * FROM stock_batches WHERE id = ?", (batch_id,)).fetchone()
+    if batch is None:
+        raise ValueError("بەچ نەدۆزرایەوە")
+    if quantity > batch["quantity"]:
+        raise ValueError("بڕ زیاترە لەوەی لە کۆگا هەیە")
+
+    new_qty = batch["quantity"] - quantity
+    with conn:
+        if new_qty == 0:
+            conn.execute(
+                "UPDATE stock_batches SET quantity = 0, status = 'disposed' WHERE id = ?",
+                (batch_id,),
+            )
+        else:
+            conn.execute(
+                "UPDATE stock_batches SET quantity = ? WHERE id = ?", (new_qty, batch_id)
+            )
+        conn.execute(
+            "INSERT INTO returns (batch_id, quantity, reason) VALUES (?, ?, ?)",
+            (batch_id, quantity, reason),
+        )
+
+    return row_to_dict(conn.execute("SELECT * FROM stock_batches WHERE id = ?", (batch_id,)).fetchone())
+
+
+def mark_as_loss(conn: sqlite3.Connection, batch_id: int, quantity: int) -> dict:
+    return _adjust_batch(conn, batch_id, quantity, "expired")
+
+
+def return_to_supplier(conn: sqlite3.Connection, batch_id: int, quantity: int) -> dict:
+    return _adjust_batch(conn, batch_id, quantity, "supplier_return")
+
+
+def record_customer_return(conn: sqlite3.Connection, sale_item_id: int, quantity: int) -> dict:
+    """Backend-only helper: restores `quantity` back to the batch a sold
+    item was originally drawn from. Not wired to any frontend page -- the
+    spec's module list has no dedicated customer-return screen, but the
+    schema (returns.reason='customer_return') supports it for future use.
+    """
+    if quantity <= 0:
+        raise ValueError("بڕ نابێت لە سفر کەمتر بێت")
+    sale_item = conn.execute(
+        "SELECT * FROM sale_items WHERE id = ?", (sale_item_id,)
+    ).fetchone()
+    if sale_item is None:
+        raise ValueError("ئایتمی فرۆشتن نەدۆزرایەوە")
+    if quantity > sale_item["quantity"]:
+        raise ValueError("بڕ زیاترە لەوەی فرۆشراوە")
+
+    batch_id = sale_item["batch_id"]
+    with conn:
+        conn.execute(
+            "UPDATE stock_batches SET quantity = quantity + ?, status = 'active' WHERE id = ?",
+            (quantity, batch_id),
+        )
+        conn.execute(
+            "INSERT INTO returns (sale_item_id, quantity, reason) VALUES (?, ?, 'customer_return')",
+            (sale_item_id, quantity),
+        )
+
+    return row_to_dict(conn.execute("SELECT * FROM stock_batches WHERE id = ?", (batch_id,)).fetchone())

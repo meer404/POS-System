@@ -1,0 +1,46 @@
+<div class="card" style="margin-bottom: 20px;">
+    <div class="card-title">
+        <img class="icon" src="assets/icons/people.svg" alt="" />
+        زیادکردنی بەکارهێنەری نوێ
+    </div>
+    <form id="create-user-form" class="form-row" style="align-items: flex-end;">
+        <div class="form-group">
+            <label>ناوی بەکارهێنەر</label>
+            <input type="text" id="new-username" required />
+        </div>
+        <div class="form-group">
+            <label>وشەی نهێنی سەرەتایی</label>
+            <input type="password" id="new-password" required minlength="4" />
+        </div>
+        <div class="form-group">
+            <label>ڕۆڵ</label>
+            <select id="new-role">
+                <option value="cashier">فرۆشیار</option>
+                <option value="admin">بەڕێوەبەر</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">
+            <img class="icon" src="assets/icons/plus-lg.svg" alt="" /> زیادکردن
+        </button>
+    </form>
+</div>
+
+<div class="card">
+    <div class="card-title">
+        <img class="icon" src="assets/icons/people.svg" alt="" />
+        هەموو بەکارهێنەران
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ناوی بەکارهێنەر</th>
+                    <th>ڕۆڵ</th>
+                    <th>دروستکراوە لە</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="users-list-body"></tbody>
+        </table>
+    </div>
+</div>

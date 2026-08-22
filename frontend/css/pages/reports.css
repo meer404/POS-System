@@ -1,0 +1,31 @@
+.reports-filter-bar {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.preset-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.preset-buttons button.active {
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.reports-grid {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 18px;
+}
+
+.chart-card {
+    height: 320px;
+}
+
+.chart-card canvas {
+    max-height: 260px;
+}

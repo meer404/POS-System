@@ -1,0 +1,23 @@
+.expiry-section {
+    margin-bottom: 26px;
+}
+
+.expiry-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 800;
+    font-size: 15.5px;
+    margin-bottom: 12px;
+}
+
+.expiry-section-title.expired { color: var(--color-danger); }
+.expiry-section-title.near { color: var(--color-warn-dark); }
+
+tr.row-expired td {
+    background: var(--color-danger-light);
+}
+
+tr.row-near-expiry td {
+    background: var(--color-warn-light);
+}

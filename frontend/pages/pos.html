@@ -1,0 +1,61 @@
+<div class="pos-layout">
+    <div>
+        <div class="pos-scan-bar">
+            <input type="text" id="pos-barcode-input" placeholder="بارکۆد بسکینە یان بینووسە و Enter بکە..." autocomplete="off" />
+            <div class="dropdown-wrap">
+                <input type="text" id="pos-search-input" placeholder="گەڕان بە ناوی کاڵا..." autocomplete="off" />
+                <div id="pos-search-results" class="dropdown-list hidden"></div>
+            </div>
+        </div>
+
+        <div class="pos-cart-card">
+            <div class="table-wrap">
+                <table class="pos-cart-table">
+                    <thead>
+                        <tr>
+                            <th>کاڵا</th>
+                            <th>نرخی یەکە</th>
+                            <th>بڕ</th>
+                            <th>کۆی گشتی</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="pos-cart-body"></tbody>
+                </table>
+            </div>
+            <div id="pos-cart-empty" class="empty-state">
+                <img class="icon" src="assets/icons/cart3.svg" alt="" />
+                <p>هیچ کاڵایەک زیاد نەکراوە</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card pos-summary-card">
+        <div>
+            <div class="pos-summary-row">
+                <span class="text-muted">کۆی گشتی</span>
+                <span id="pos-subtotal">٠</span>
+            </div>
+
+            <div class="form-group mt-10">
+                <label>داشکاندن</label>
+                <div class="discount-toggle">
+                    <button type="button" id="discount-mode-flat" class="active">بڕی نەخشە</button>
+                    <button type="button" id="discount-mode-percent">لەسەدا</button>
+                </div>
+                <input type="number" id="discount-value" min="0" value="0" class="mt-10" />
+            </div>
+
+            <div class="pos-summary-row total mt-20">
+                <span>کۆی کۆتایی</span>
+                <span id="pos-final-total">٠ د.ع</span>
+            </div>
+        </div>
+
+        <button class="btn btn-primary btn-block input-lg" id="pos-complete-sale-btn">
+            <img class="icon" src="assets/icons/check-lg.svg" alt="" />
+            تەواوکردنی فرۆشتن
+        </button>
+        <button class="btn btn-outline btn-block" id="pos-clear-cart-btn">پاکردنەوەی سەبەتە</button>
+    </div>
+</div>

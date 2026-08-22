@@ -1,0 +1,93 @@
+<div class="card products-add-card">
+    <div class="card-title">
+        <img class="icon" src="assets/icons/box-seam.svg" alt="" />
+        زیادکردنی کاڵا / بەچی نوێ
+    </div>
+
+    <div class="add-product-barcode-row">
+        <div class="form-group">
+            <label>بارکۆد</label>
+            <input type="text" id="add-barcode-input" placeholder="بارکۆد بسکینە یان بینووسە..." autocomplete="off" />
+        </div>
+        <button type="button" class="btn btn-outline" id="generate-barcode-btn">دروستکردنی بارکۆدی ناوخۆیی</button>
+    </div>
+
+    <div id="existing-product-banner" class="existing-product-banner hidden">
+        <img class="icon" src="assets/icons/exclamation-triangle.svg" alt="" />
+        <span>ئەم کاڵایە پێشتر تۆمارکراوە — بەچێکی نوێ زیاد دەکرێت (نرخی کڕینی کۆن ناگۆڕدرێت)</span>
+    </div>
+
+    <form id="add-product-form">
+        <div class="product-form-grid">
+            <div class="form-group">
+                <label>ناوی کاڵا</label>
+                <input type="text" id="f-name" required />
+            </div>
+            <div class="form-group">
+                <label>هاوپۆل</label>
+                <input type="text" id="f-category" />
+            </div>
+            <div class="form-group">
+                <label>یەکە</label>
+                <input type="text" id="f-unit" placeholder="دانە / کیلۆ / لیتر" />
+            </div>
+            <div class="form-group">
+                <label>نرخی فرۆشتن (د.ع)</label>
+                <input type="number" id="f-sale-price" min="0" required />
+            </div>
+            <div class="form-group">
+                <label>کەمترین بڕی کۆگا</label>
+                <input type="number" id="f-min-stock" min="0" value="0" />
+            </div>
+            <div></div>
+
+            <div class="form-group">
+                <label>نرخی کڕین (د.ع)</label>
+                <input type="number" id="f-purchase-price" min="0" required />
+            </div>
+            <div class="form-group">
+                <label>بڕ</label>
+                <input type="number" id="f-quantity" min="0" required />
+            </div>
+            <div class="form-group">
+                <label>بەرواری بەسەرچوون (ئارەزوومەندانە)</label>
+                <input type="date" id="f-expiry-date" />
+            </div>
+        </div>
+
+        <div id="existing-batches-preview" class="batch-list hidden"></div>
+
+        <div class="modal-actions" style="justify-content: flex-start; margin-top: 18px;">
+            <button type="submit" class="btn btn-primary" id="add-product-submit-btn">
+                <img class="icon" src="assets/icons/plus-lg.svg" alt="" />
+                <span id="add-product-submit-label">زیادکردنی کاڵا</span>
+            </button>
+            <button type="button" class="btn btn-outline" id="add-product-reset-btn">پاککردنەوە</button>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <div class="products-toolbar">
+        <div class="card-title" style="margin-bottom:0">
+            <img class="icon" src="assets/icons/box-seam.svg" alt="" />
+            هەموو کاڵاکان
+        </div>
+        <input type="search" id="products-list-search" placeholder="گەڕان..." />
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ناو</th>
+                    <th>بارکۆد</th>
+                    <th>هاوپۆل</th>
+                    <th>نرخی فرۆشتن</th>
+                    <th>بڕی کۆگا</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="products-list-body"></tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,62 @@
+<div class="reports-filter-bar">
+    <div class="preset-buttons">
+        <button type="button" class="btn btn-outline active" data-preset="today">ئەمڕۆ</button>
+        <button type="button" class="btn btn-outline" data-preset="week">ئەم هەفتەیە</button>
+        <button type="button" class="btn btn-outline" data-preset="month">ئەم مانگە</button>
+    </div>
+    <div class="form-group">
+        <label>لە بەرواری</label>
+        <input type="date" id="report-start-date" />
+    </div>
+    <div class="form-group">
+        <label>بۆ بەرواری</label>
+        <input type="date" id="report-end-date" />
+    </div>
+    <button type="button" class="btn btn-accent" id="report-apply-range-btn">دواندنی ماوە</button>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon primary"><img class="icon" src="assets/icons/box-seam.svg" alt="" /></div>
+        <div>
+            <div class="stat-value" id="stat-items-sold">٠</div>
+            <div class="stat-label">ژمارەی کاڵای فرۆشراو</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon accent"><img class="icon" src="assets/icons/cart3.svg" alt="" /></div>
+        <div>
+            <div class="stat-value" id="stat-revenue">٠</div>
+            <div class="stat-label">کۆی داهات</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon warn"><img class="icon" src="assets/icons/bar-chart-line.svg" alt="" /></div>
+        <div>
+            <div class="stat-value" id="stat-profit">٠</div>
+            <div class="stat-label">کۆی قازانج</div>
+        </div>
+    </div>
+</div>
+
+<div class="reports-grid">
+    <div class="card chart-card">
+        <div class="card-title">فرۆشتنی ٧ ڕۆژی ڕابردوو</div>
+        <canvas id="daily-chart"></canvas>
+    </div>
+    <div class="card">
+        <div class="card-title">باشترین کاڵا فرۆشراو (٥ باشترین)</div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>کاڵا</th>
+                        <th>بڕی فرۆشراو</th>
+                        <th>داهات</th>
+                    </tr>
+                </thead>
+                <tbody id="top-products-body"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
