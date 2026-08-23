@@ -82,7 +82,7 @@ const ReportsPage = (() => {
     }
 
     function init() {
-        const today = new Date().toISOString().slice(0, 10);
+        const today = localDateISO();
         el('report-start-date').value = today;
         el('report-end-date').value = today;
 

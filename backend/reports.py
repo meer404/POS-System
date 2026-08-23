@@ -10,7 +10,7 @@ def _returns_totals(conn: sqlite3.Connection, start_date: str, end_date: str) ->
         """
         SELECT COALESCE(SUM(quantity), 0) AS quantity, COALESCE(SUM(refund_amount), 0) AS amount
         FROM returns
-        WHERE reason = 'customer_return' AND date(created_at) BETWEEN ? AND ?
+        WHERE reason = 'customer_return' AND date(created_at, 'localtime') BETWEEN ? AND ?
         """,
         (start_date, end_date),
     ).fetchone()
@@ -26,7 +26,7 @@ def total_items_sold(conn: sqlite3.Connection, start_date: str, end_date: str) -
         """
         SELECT COALESCE(SUM(si.quantity), 0) AS total
         FROM sale_items si JOIN sales s ON s.id = si.sale_id
-        WHERE date(s.created_at) BETWEEN ? AND ?
+        WHERE date(s.created_at, 'localtime') BETWEEN ? AND ?
         """,
         (start_date, end_date),
     ).fetchone()
@@ -38,7 +38,7 @@ def total_revenue(conn: sqlite3.Connection, start_date: str, end_date: str) -> i
     row = conn.execute(
         """
         SELECT COALESCE(SUM(final_amount), 0) AS total FROM sales
-        WHERE date(created_at) BETWEEN ? AND ?
+        WHERE date(created_at, 'localtime') BETWEEN ? AND ?
         """,
         (start_date, end_date),
     ).fetchone()
@@ -53,7 +53,7 @@ def total_profit(conn: sqlite3.Connection, start_date: str, end_date: str) -> in
         FROM sale_items si
         JOIN sales s ON s.id = si.sale_id
         JOIN stock_batches sb ON sb.id = si.batch_id
-        WHERE date(s.created_at) BETWEEN ? AND ?
+        WHERE date(s.created_at, 'localtime') BETWEEN ? AND ?
         """,
         (start_date, end_date),
     ).fetchone()
@@ -77,10 +77,10 @@ def top_selling_products(conn: sqlite3.Connection, start_date: str, end_date: st
         LEFT JOIN (
             SELECT product_id, SUM(quantity) AS returned_qty, SUM(refund_amount) AS returned_amount
             FROM returns
-            WHERE reason = 'customer_return' AND date(created_at) BETWEEN ? AND ?
+            WHERE reason = 'customer_return' AND date(created_at, 'localtime') BETWEEN ? AND ?
             GROUP BY product_id
         ) r ON r.product_id = p.id
-        WHERE date(s.created_at) BETWEEN ? AND ?
+        WHERE date(s.created_at, 'localtime') BETWEEN ? AND ?
         GROUP BY p.id
         ORDER BY (gross_qty_sold - returned_qty) DESC
         LIMIT ?
@@ -101,9 +101,9 @@ def top_selling_products(conn: sqlite3.Connection, start_date: str, end_date: st
 def daily_sales_last_n_days(conn: sqlite3.Connection, n: int = 7) -> list[dict]:
     rows = conn.execute(
         """
-        SELECT date(created_at) AS day, COALESCE(SUM(final_amount), 0) AS revenue
+        SELECT date(created_at, 'localtime') AS day, COALESCE(SUM(final_amount), 0) AS revenue
         FROM sales
-        WHERE date(created_at) >= date('now', ?)
+        WHERE date(created_at, 'localtime') >= date('now', 'localtime', ?)
         GROUP BY day
         ORDER BY day
         """,

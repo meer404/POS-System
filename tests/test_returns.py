@@ -150,10 +150,7 @@ def test_reports_net_out_sale_and_return_on_same_day(conn):
         conn, [{"product_id": product_id, "quantity": 1, "refund_amount": 1000}]
     )
 
-    # Use SQLite's own notion of "today" (matches what date(created_at) filters
-    # against) rather than Python's local date.today(), which can disagree near
-    # local midnight in timezones ahead of UTC.
-    today = conn.execute("SELECT date('now') AS d").fetchone()["d"]
+    today = conn.execute("SELECT date('now', 'localtime') AS d").fetchone()["d"]
     assert reports.total_items_sold(conn, today, today) == 1
     assert reports.total_revenue(conn, today, today) == 1000
     # gross profit = (1000-600)*2 = 800; minus full refund (1000) = -200
