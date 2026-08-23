@@ -1,3 +1,99 @@
+.pos-tabs-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+}
+
+.pos-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    background: var(--color-surface-alt);
+    color: var(--color-text-muted);
+    font-weight: 700;
+    font-size: 14px;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.pos-tab.active {
+    background: var(--color-surface);
+    color: var(--color-primary-dark);
+    border-bottom-color: var(--color-primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.pos-tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.pos-tab.active .pos-tab-badge {
+    background: var(--color-primary-dark);
+}
+
+.pos-tab-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    color: inherit;
+    opacity: 0.6;
+}
+
+.pos-tab-close:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.pos-tab-close .icon {
+    width: 12px;
+    height: 12px;
+}
+
+.pos-tab-add {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    background: var(--color-primary-light);
+    color: var(--color-primary-dark);
+    font-weight: 700;
+    font-size: 14px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.pos-tab-add:hover {
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.pos-tab-add .icon {
+    width: 16px;
+    height: 16px;
+}
+
 .pos-layout {
     display: grid;
     grid-template-columns: 1fr 380px;

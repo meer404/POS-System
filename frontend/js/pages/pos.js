@@ -1,12 +1,105 @@
 const PosPage = (() => {
-    let discountMode = 'flat';
     let searchDebounceTimer = null;
     let barcodeDebounceTimer = null;
 
     const CHANGE_DENOMINATIONS = [250, 500, 1000, 5000, 10000, 25000, 50000];
+    const MAX_SALES_TABS = 8;
 
     function el(id) {
         return document.getElementById(id);
+    }
+
+    function renderTabs() {
+        const bar = el('pos-tabs-bar');
+        if (!bar) return;
+        const tabs = State.salesTabs;
+        const tabButtons = tabs
+            .map((tab, idx) => {
+                const isActive = tab.id === State.activeSalesTabId;
+                const badge = tab.cart.length > 0 ? `<span class="pos-tab-badge">${tab.cart.length}</span>` : '';
+                const closeBtn =
+                    idx > 0
+                        ? `<button type="button" class="pos-tab-close" data-close-tab="${tab.id}" title="داخستنی ئەم فرۆشتنە">
+                               <img class="icon" src="assets/icons/x-lg.svg" alt="" />
+                           </button>`
+                        : '';
+                return `
+                <div class="pos-tab ${isActive ? 'active' : ''}" data-tab-id="${tab.id}">
+                    <span class="pos-tab-label">فرۆشتن ${idx + 1}</span>
+                    ${badge}
+                    ${closeBtn}
+                </div>`;
+            })
+            .join('');
+        const addBtn =
+            tabs.length < MAX_SALES_TABS
+                ? `<div class="pos-tab-add" id="pos-tab-add-btn">
+                       <img class="icon" src="assets/icons/plus-lg.svg" alt="" />
+                       <span>فرۆشتنی نوێ</span>
+                   </div>`
+                : '';
+        bar.innerHTML = tabButtons + addBtn;
+    }
+
+    function syncDiscountControlsFromActiveTab() {
+        const tab = State.activeSalesTab();
+        el('discount-value').value = tab.discountValue;
+        el('discount-mode-flat').classList.toggle('active', tab.discountMode === 'flat');
+        el('discount-mode-percent').classList.toggle('active', tab.discountMode === 'percent');
+    }
+
+    function refreshActiveTabView() {
+        syncDiscountControlsFromActiveTab();
+        renderCart();
+        renderTabs();
+        ScannerFocus.refocus();
+    }
+
+    function handleSwitchTab(tabId) {
+        if (tabId === State.activeSalesTabId) return;
+        State.activeSalesTabId = tabId;
+        refreshActiveTabView();
+    }
+
+    function handleAddTab() {
+        if (State.salesTabs.length >= MAX_SALES_TABS) return;
+        State.addSalesTab();
+        refreshActiveTabView();
+    }
+
+    async function handleCloseTab(tabId) {
+        const idx = State.salesTabs.findIndex((t) => t.id === tabId);
+        if (idx <= 0) return; // the first tab can never be closed
+        const tab = State.salesTabs[idx];
+        if (tab.cart.length > 0) {
+            const confirmed = await Modal.confirm('دڵنیایت لە داخستنی ئەم فرۆشتنە؟ زانیارییەکانی لەناودەچن.', {
+                confirmLabel: 'داخستن',
+                danger: true,
+            });
+            if (!confirmed) {
+                ScannerFocus.refocus();
+                return;
+            }
+        }
+        State.closeSalesTab(tabId);
+        refreshActiveTabView();
+    }
+
+    function handleTabsBarClick(e) {
+        const closeBtn = e.target.closest('[data-close-tab]');
+        if (closeBtn) {
+            handleCloseTab(parseInt(closeBtn.dataset.closeTab, 10));
+            return;
+        }
+        const addBtn = e.target.closest('#pos-tab-add-btn');
+        if (addBtn) {
+            handleAddTab();
+            return;
+        }
+        const tabEl = e.target.closest('.pos-tab[data-tab-id]');
+        if (tabEl) {
+            handleSwitchTab(parseInt(tabEl.dataset.tabId, 10));
+        }
     }
 
     function renderCart() {
@@ -50,6 +143,7 @@ const PosPage = (() => {
     function computeFinalTotal() {
         const subtotal = State.cartTotal();
         const discountValue = parseInt(el('discount-value').value, 10) || 0;
+        const discountMode = State.activeSalesTab().discountMode;
         let discount;
         if (discountMode === 'percent') {
             discount = Math.round((subtotal * discountValue) / 100);
@@ -177,7 +271,7 @@ const PosPage = (() => {
     }
 
     function setDiscountMode(mode) {
-        discountMode = mode;
+        State.activeSalesTab().discountMode = mode;
         el('discount-mode-flat').classList.toggle('active', mode === 'flat');
         el('discount-mode-percent').classList.toggle('active', mode === 'percent');
         renderTotals();
@@ -245,12 +339,14 @@ const PosPage = (() => {
         const btn = el('pos-complete-sale-btn');
         btn.disabled = true;
         try {
+            const tab = State.activeSalesTab();
             const discountValue = parseInt(el('discount-value').value, 10) || 0;
             const items = State.cart.map((i) => ({ product_id: i.product_id, quantity: i.quantity }));
-            const receipt = await Api.call('complete_sale', items, discountMode, discountValue);
-            State.cartClear();
-            el('discount-value').value = 0;
+            const receipt = await Api.call('complete_sale', items, tab.discountMode, discountValue);
+            State.resetSalesTab(tab.id);
+            syncDiscountControlsFromActiveTab();
             renderCart();
+            renderTabs();
             showReceiptDialog(receipt);
         } catch (err) {
             Toast.error(err.message);
@@ -362,13 +458,19 @@ const PosPage = (() => {
         });
 
         el('pos-cart-body').addEventListener('click', handleCartClick);
-        el('discount-value').addEventListener('input', renderTotals);
+        el('discount-value').addEventListener('input', () => {
+            State.activeSalesTab().discountValue = parseInt(el('discount-value').value, 10) || 0;
+            renderTotals();
+        });
         el('discount-mode-flat').addEventListener('click', () => setDiscountMode('flat'));
         el('discount-mode-percent').addEventListener('click', () => setDiscountMode('percent'));
         el('pos-complete-sale-btn').addEventListener('click', handleCompleteSale);
         el('pos-give-change-btn').addEventListener('click', showGiveChangeDialog);
         el('pos-clear-cart-btn').addEventListener('click', handleClearCart);
+        el('pos-tabs-bar').addEventListener('click', handleTabsBarClick);
 
+        syncDiscountControlsFromActiveTab();
+        renderTabs();
         renderCart();
     }
 

@@ -94,7 +94,7 @@ async function handleLogout() {
     if (!confirmed) return;
     await Api.call('logout');
     State.currentUser = null;
-    State.cartClear();
+    State.resetAllSalesTabs();
     window.location.hash = '';
     showLoginScreen();
 }
