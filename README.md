@@ -75,7 +75,6 @@ Output lands in `dist\POS-System\` — copy the **whole folder**, not just the .
 ## سنووردارییە زانراوەکان / Known limitations
 
 - No sale voiding/cancellation.
-- No dedicated "customer return" screen (the database schema and a backend function support it, but it isn't wired to any UI page, matching the original spec's module list).
 - No user deactivation/deletion (only role changes and password resets), to avoid breaking historical sales' foreign-key references.
 
 ## پێکهاتەی پڕۆژە / Project structure

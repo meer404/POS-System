@@ -73,9 +73,19 @@ If you change how either is packaged/bundled, check both functions — they inte
 
 `tests/conftest.py` provides a `conn` fixture: a fresh in-memory SQLite DB (`db.get_connection(":memory:")` + `db.init_db`) per test — no fixtures touch the real `data/store.db`. Business logic in `backend/*.py` takes a `conn` as its first argument specifically so it's testable without pywebview or the `JSApi`/session layer at all; `tests/test_roles.py` is the one place that exercises `JSApi` directly (to test the decorator behavior), constructing a bare `sqlite3.Connection` and calling `session.set_current_user(...)` manually rather than going through `auth.login`.
 
+### Customer returns: two independent code paths
+
+There are two distinct return flows, both writing to the same `returns` table with `reason='customer_return'`, and neither calls the other:
+- `backend/expiry.py::record_customer_return(sale_item_id, quantity)` — receipt-based: given a specific `sale_items` row, restores its exact original batch. Still unwired to any `JSApi` method/frontend page (kept for a possible future receipt-lookup flow).
+- `backend/expiry.py::create_customer_return(items)` — barcode-based: powers the "Product Return" page (`frontend/pages/returns.html` / `js/pages/returns.js`). No receipt lookup — the cashier scans a product directly, so each item only carries a `product_id`. Stock is restored to the product's most recent active batch (or a new batch at the last known purchase price, if none is active); `returns.product_id`/`returns.refund_amount` (added via the `db.py::_migrate_returns_table` migration, see below) record what was returned and what the cashier refunded. `backend/reports.py` nets returns (by `created_at` date, not the original sale's date) out of `items_sold`/`revenue`/`profit`, treating the full refund as the profit reduction since there's no link back to the original sale's cost basis.
+
+### Schema migrations
+
+`CREATE TABLE IF NOT EXISTS` (in `db.py::SCHEMA_STATEMENTS`) is a no-op on a database that already has the table — it does **not** add new columns to existing installs. The customer-return feature above needed two new columns on an already-shipped `returns` table, so `db.py::_migrate_returns_table` (called from `init_db`) is the project's first real migration: it checks `PRAGMA table_info(returns)` and runs `ALTER TABLE ... ADD COLUMN` for whatever's missing. If you need to change an existing table's shape again, follow this pattern — add to `RETURNS_TABLE_MIGRATIONS` (or a new equivalent list) rather than editing the `CREATE TABLE` statement and assuming it reaches existing `store.db` files.
+
 ### Known, deliberate scope limits
 
-Not gaps — see `README.md`'s "Known limitations" for the full list: no sale voiding, no user deactivation/deletion (would break `sales.cashier_id` FK), no customer-return UI (the schema and `backend/expiry.py::record_customer_return` support it but nothing calls it — it's there for a possible future page).
+Not gaps — see `README.md`'s "Known limitations" for the full list: no sale voiding, no user deactivation/deletion (would break `sales.cashier_id` FK).
 
 ## Available imports
 

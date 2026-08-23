@@ -2,6 +2,7 @@
 
 const MENU = [
     { route: 'pos', label: 'فرۆشتن', icon: 'cart3', roles: ['admin', 'cashier'] },
+    { route: 'returns', label: 'گەڕاندنەوەی کاڵا', icon: 'arrow-repeat', roles: ['admin', 'cashier'] },
     { route: 'products', label: 'کاڵاکان', icon: 'box-seam', roles: ['admin', 'cashier'] },
     { route: 'reports', label: 'ڕاپۆرت', icon: 'bar-chart-line', roles: ['admin'] },
     { route: 'expiry', label: 'بەسەرچوون', icon: 'clock-history', roles: ['admin'] },
@@ -10,6 +11,7 @@ const MENU = [
 
 const PAGE_TITLES = {
     pos: 'فرۆشتن',
+    returns: 'گەڕاندنەوەی کاڵا',
     products: 'کاڵاکان',
     reports: 'ڕاپۆرت',
     expiry: 'بەسەرچوونی کاڵا',
@@ -18,6 +20,7 @@ const PAGE_TITLES = {
 
 const PAGE_MODULES = {
     pos: () => PosPage,
+    returns: () => ReturnsPage,
     products: () => ProductsPage,
     reports: () => ReportsPage,
     expiry: () => ExpiryPage,

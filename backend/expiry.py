@@ -1,7 +1,7 @@
 """Expired / near-expiry batch queries, Mark as Loss, and supplier returns."""
 import sqlite3
 
-from backend.utils import row_to_dict, rows_to_list
+from backend.utils import as_int, row_to_dict, rows_to_list
 
 
 def list_expired(conn: sqlite3.Connection) -> list[dict]:
@@ -66,6 +66,91 @@ def mark_as_loss(conn: sqlite3.Connection, batch_id: int, quantity: int) -> dict
 
 def return_to_supplier(conn: sqlite3.Connection, batch_id: int, quantity: int) -> dict:
     return _adjust_batch(conn, batch_id, quantity, "supplier_return")
+
+
+def _restore_stock_for_return(conn: sqlite3.Connection, product_id: int, quantity: int) -> int:
+    """Add `quantity` to the product's most recent active batch, or create a
+    new one (priced at the product's last known purchase price) if it has
+    none. Returns the batch_id that received the stock."""
+    batch = conn.execute(
+        """
+        SELECT id FROM stock_batches
+        WHERE product_id = ? AND status = 'active'
+        ORDER BY received_at DESC LIMIT 1
+        """,
+        (product_id,),
+    ).fetchone()
+    if batch is not None:
+        conn.execute(
+            "UPDATE stock_batches SET quantity = quantity + ? WHERE id = ?",
+            (quantity, batch["id"]),
+        )
+        return batch["id"]
+
+    last_price_row = conn.execute(
+        "SELECT purchase_price FROM stock_batches WHERE product_id = ? ORDER BY received_at DESC LIMIT 1",
+        (product_id,),
+    ).fetchone()
+    purchase_price = last_price_row["purchase_price"] if last_price_row is not None else 0
+    cur = conn.execute(
+        "INSERT INTO stock_batches (product_id, purchase_price, quantity, status) VALUES (?, ?, ?, 'active')",
+        (product_id, purchase_price, quantity),
+    )
+    return cur.lastrowid
+
+
+def create_customer_return(conn: sqlite3.Connection, items: list[dict]) -> dict:
+    """Barcode-driven customer return: no receipt/sale_item lookup, so each
+    item only carries a product_id. Restores stock and records one `returns`
+    row per item, all in a single transaction, and returns a receipt-shaped
+    dict for the frontend's return slip.
+    """
+    if not items:
+        raise ValueError("لیستی گەڕاندنەوە بەتاڵە")
+
+    parsed_items = []
+    for entry in items:
+        product_id = as_int(entry.get("product_id"), "product_id")
+        quantity = as_int(entry.get("quantity"), "quantity")
+        refund_amount = as_int(entry.get("refund_amount"), "refund_amount")
+        if quantity <= 0:
+            raise ValueError("بڕ نابێت لە سفر کەمتر بێت")
+        if refund_amount < 0:
+            raise ValueError("بڕی گەڕاندنەوە نابێت لە سفر کەمتر بێت")
+        product = conn.execute("SELECT * FROM products WHERE id = ?", (product_id,)).fetchone()
+        if product is None:
+            raise ValueError("کاڵا نەدۆزرایەوە")
+        parsed_items.append((product, quantity, refund_amount))
+
+    receipt_items = []
+    total_refund = 0
+    last_return_id = None
+    with conn:
+        for product, quantity, refund_amount in parsed_items:
+            batch_id = _restore_stock_for_return(conn, product["id"], quantity)
+            cur = conn.execute(
+                """
+                INSERT INTO returns (product_id, batch_id, quantity, refund_amount, reason)
+                VALUES (?, ?, ?, ?, 'customer_return')
+                """,
+                (product["id"], batch_id, quantity, refund_amount),
+            )
+            last_return_id = cur.lastrowid
+            receipt_items.append(
+                {
+                    "product_id": product["id"],
+                    "name": product["name"],
+                    "quantity": quantity,
+                    "refund_amount": refund_amount,
+                }
+            )
+            total_refund += refund_amount
+
+        created_at = conn.execute(
+            "SELECT created_at FROM returns WHERE id = ?", (last_return_id,)
+        ).fetchone()["created_at"]
+
+    return {"items": receipt_items, "total_refund": total_refund, "created_at": created_at}
 
 
 def record_customer_return(conn: sqlite3.Connection, sale_item_id: int, quantity: int) -> dict:

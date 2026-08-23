@@ -1,0 +1,8 @@
+.returns-table td.cell-name {
+    font-weight: 700;
+}
+
+.returns-table .qty-input,
+.returns-table .refund-input {
+    max-width: 110px;
+}

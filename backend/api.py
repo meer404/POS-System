@@ -211,6 +211,15 @@ class JSApi:
         except (ValueError, TypeError) as e:
             return _err("VALIDATION_ERROR", str(e))
 
+    # ---------------- Customer returns ----------------
+
+    @require_role("admin", "cashier")
+    def create_customer_return(self, items: list) -> dict:
+        try:
+            return _ok(expiry.create_customer_return(self.conn, items))
+        except (ValueError, TypeError) as e:
+            return _err("VALIDATION_ERROR", str(e))
+
     # ---------------- Users (admin only) ----------------
 
     @require_role("admin")

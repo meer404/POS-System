@@ -1,0 +1,39 @@
+<div class="pos-layout">
+    <div>
+        <div class="pos-scan-bar">
+            <input type="text" id="returns-barcode-input" class="input-lg" placeholder="بارکۆدی کاڵای گەڕاوە بسکینە یان بینووسە و Enter بکە..." autocomplete="off" />
+        </div>
+
+        <div class="pos-cart-card">
+            <div class="table-wrap">
+                <table class="pos-cart-table returns-table">
+                    <thead>
+                        <tr>
+                            <th>کاڵا</th>
+                            <th>بڕی گەڕاوە</th>
+                            <th>بڕی گەڕاندنەوە</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="returns-body"></tbody>
+                </table>
+            </div>
+            <div id="returns-empty" class="empty-state">
+                <img class="icon" src="assets/icons/arrow-repeat.svg" alt="" />
+                <p>هیچ کاڵایەک زیاد نەکراوە</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card pos-summary-card">
+        <div class="pos-summary-row total">
+            <span>کۆی گەڕاندنەوە</span>
+            <span id="returns-total">٠ د.ع</span>
+        </div>
+
+        <button class="btn btn-primary btn-block input-lg" id="returns-complete-btn">
+            <img class="icon" src="assets/icons/arrow-repeat.svg" alt="" />
+            گەڕاندنەوەی کاڵا
+        </button>
+    </div>
+</div>

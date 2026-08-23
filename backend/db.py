@@ -3,7 +3,7 @@ import sqlite3
 import sys
 from pathlib import Path
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 SCHEMA_STATEMENTS = [
     """
@@ -91,6 +91,22 @@ SCHEMA_STATEMENTS = [
     "CREATE INDEX IF NOT EXISTS idx_returns_sale_item ON returns(sale_item_id)",
 ]
 
+# Columns added after the initial `returns` table shipped. `CREATE TABLE IF
+# NOT EXISTS` is a no-op on a database that already has the table, so these
+# need an explicit ALTER TABLE migration to reach existing store.db files.
+RETURNS_TABLE_MIGRATIONS = [
+    ("product_id", "ALTER TABLE returns ADD COLUMN product_id INTEGER REFERENCES products(id)"),
+    ("refund_amount", "ALTER TABLE returns ADD COLUMN refund_amount INTEGER"),
+]
+
+
+def _migrate_returns_table(conn: sqlite3.Connection) -> None:
+    existing_columns = {row["name"] for row in conn.execute("PRAGMA table_info(returns)")}
+    for column_name, alter_statement in RETURNS_TABLE_MIGRATIONS:
+        if column_name not in existing_columns:
+            conn.execute(alter_statement)
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_returns_product ON returns(product_id)")
+
 
 def resolve_db_path() -> Path:
     """Resolve the SQLite file location for both dev and frozen (PyInstaller) runs.
@@ -124,6 +140,7 @@ def init_db(conn: sqlite3.Connection) -> None:
     with conn:
         for statement in SCHEMA_STATEMENTS:
             conn.execute(statement)
+        _migrate_returns_table(conn)
         row = conn.execute("SELECT version FROM schema_version WHERE id = 1").fetchone()
         if row is None:
             conn.execute(

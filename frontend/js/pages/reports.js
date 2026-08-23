@@ -15,6 +15,9 @@ const ReportsPage = (() => {
         el('stat-items-sold').textContent = formatNumber(summary.items_sold);
         el('stat-revenue').textContent = formatMoney(summary.revenue);
         el('stat-profit').textContent = formatMoney(summary.profit);
+        if (summary.returns) {
+            el('stat-returns').textContent = `${formatMoney(summary.returns.amount)} (${formatNumber(summary.returns.quantity)} دانە)`;
+        }
 
         const topBody = el('top-products-body');
         if (summary.top_products.length === 0) {

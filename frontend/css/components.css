@@ -150,6 +150,8 @@
 .stat-card .stat-icon.accent .icon { color: var(--color-accent); }
 .stat-card .stat-icon.warn { background: var(--color-warn-light); }
 .stat-card .stat-icon.warn .icon { color: var(--color-warn-dark); }
+.stat-card .stat-icon.danger { background: var(--color-danger-light); }
+.stat-card .stat-icon.danger .icon { color: var(--color-danger); }
 
 .stat-card .stat-value {
     font-size: 22px;
