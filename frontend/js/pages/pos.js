@@ -343,7 +343,12 @@ const PosPage = (() => {
             const discountValue = parseInt(el('discount-value').value, 10) || 0;
             const items = State.cart.map((i) => ({ product_id: i.product_id, quantity: i.quantity }));
             const receipt = await Api.call('complete_sale', items, tab.discountMode, discountValue);
-            State.resetSalesTab(tab.id);
+            const tabIdx = State.salesTabs.findIndex((t) => t.id === tab.id);
+            if (tabIdx === 0) {
+                State.resetSalesTab(tab.id); // the first tab always stays open, just emptied
+            } else {
+                State.closeSalesTab(tab.id); // other tabs close once their sale is done
+            }
             syncDiscountControlsFromActiveTab();
             renderCart();
             renderTabs();
