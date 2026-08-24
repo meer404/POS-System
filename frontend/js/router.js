@@ -1,6 +1,7 @@
 // Hash-based router + role-filtered sidebar builder.
 
 const MENU = [
+    { route: 'home', label: 'ماڵەوە', icon: 'shop', roles: ['admin', 'cashier'] },
     { route: 'pos', label: 'فرۆشتن', icon: 'cart3', roles: ['admin', 'cashier'] },
     { route: 'returns', label: 'گەڕاندنەوەی کاڵا', icon: 'arrow-repeat', roles: ['admin', 'cashier'] },
     { route: 'products', label: 'کاڵاکان', icon: 'box-seam', roles: ['admin', 'cashier'] },
@@ -10,6 +11,7 @@ const MENU = [
 ];
 
 const PAGE_TITLES = {
+    home: 'ماڵەوە',
     pos: 'فرۆشتن',
     returns: 'گەڕاندنەوەی کاڵا',
     products: 'کاڵاکان',
@@ -19,6 +21,7 @@ const PAGE_TITLES = {
 };
 
 const PAGE_MODULES = {
+    home: () => HomePage,
     pos: () => PosPage,
     returns: () => ReturnsPage,
     products: () => ProductsPage,
@@ -58,7 +61,7 @@ const Router = (() => {
 
     function currentRoute() {
         const hash = window.location.hash.replace(/^#\//, '');
-        return hash || 'pos';
+        return hash || 'home';
     }
 
     async function navigate() {
@@ -67,7 +70,7 @@ const Router = (() => {
 
         const menuItem = MENU.find((m) => m.route === route);
         if (!menuItem || !role || !menuItem.roles.includes(role)) {
-            route = MENU.find((m) => role && m.roles.includes(role))?.route || 'pos';
+            route = MENU.find((m) => role && m.roles.includes(role))?.route || 'home';
             window.location.hash = `#/${route}`;
             return;
         }

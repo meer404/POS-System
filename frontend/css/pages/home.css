@@ -1,0 +1,127 @@
+.home-header {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+    padding: 22px 26px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.home-header-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.home-header-brand .brand-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: var(--radius-md);
+    background: var(--color-primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.home-header-brand .brand-icon .icon {
+    width: 26px;
+    height: 26px;
+    color: var(--color-primary);
+}
+
+.home-store-name {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--color-primary-dark);
+}
+
+.home-welcome {
+    font-size: 13px;
+    color: var(--color-text-muted);
+}
+
+.home-header-user {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.home-user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.4;
+}
+
+.home-username {
+    font-weight: 700;
+    font-size: 14.5px;
+}
+
+.home-userrole {
+    font-size: 12.5px;
+    color: var(--color-text-muted);
+}
+
+.home-nav-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+}
+
+.home-nav-card {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1.5px solid var(--color-border);
+    padding: 30px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.home-nav-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-primary);
+}
+
+.home-nav-card:active {
+    transform: scale(0.98) translateY(-1px);
+}
+
+.home-nav-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.home-nav-icon .icon {
+    width: 32px;
+    height: 32px;
+}
+
+.home-nav-icon.primary { background: var(--color-primary-light); }
+.home-nav-icon.primary .icon { color: var(--color-primary); }
+.home-nav-icon.accent { background: var(--color-accent-light); }
+.home-nav-icon.accent .icon { color: var(--color-accent); }
+.home-nav-icon.warn { background: var(--color-warn-light); }
+.home-nav-icon.warn .icon { color: var(--color-warn-dark); }
+.home-nav-icon.danger { background: var(--color-danger-light); }
+.home-nav-icon.danger .icon { color: var(--color-danger); }
+
+.home-nav-label {
+    font-size: 16px;
+    font-weight: 700;
+}
