@@ -1,6 +1,5 @@
-const ProductsPage = (() => {
+const ProductAddPage = (() => {
     let existingProduct = null; // set when the scanned/entered barcode matches an existing product
-    let allProducts = [];
     let barcodeDebounceTimer = null;
 
     function el(id) {
@@ -129,57 +128,11 @@ const ProductsPage = (() => {
                 Toast.success('کاڵا زیادکرا');
             }
             resetForm();
-            await loadProductList();
             ScannerFocus.refocus();
         } catch (err) {
             Toast.error(err.message);
         } finally {
             btn.disabled = false;
-        }
-    }
-
-    function renderProductList(filterText = '') {
-        const body = el('products-list-body');
-        const filtered = filterText
-            ? allProducts.filter(
-                  (p) =>
-                      p.name.includes(filterText) ||
-                      (p.barcode && p.barcode.includes(filterText)) ||
-                      (p.category && p.category.includes(filterText))
-              )
-            : allProducts;
-
-        if (filtered.length === 0) {
-            body.innerHTML = `<tr><td colspan="6" class="text-center text-muted">هیچ کاڵایەک نییە</td></tr>`;
-            return;
-        }
-
-        body.innerHTML = filtered
-            .map((p) => {
-                const low = p.stock_qty <= p.min_stock;
-                return `
-                <tr>
-                    <td class="text-bold">${p.name}</td>
-                    <td>${p.barcode || '-'}</td>
-                    <td>${p.category || '-'}</td>
-                    <td>${formatMoney(p.sale_price)}</td>
-                    <td class="${low ? 'stock-low' : ''}">${formatNumber(p.stock_qty)}${low ? ' ⚠' : ''}</td>
-                    <td>
-                        <button class="btn btn-ghost btn-sm edit-product-btn" data-barcode="${p.barcode || ''}">
-                            <img class="icon icon-sm" src="assets/icons/pencil-square.svg" alt="" /> دەستکاری
-                        </button>
-                    </td>
-                </tr>`;
-            })
-            .join('');
-    }
-
-    async function loadProductList() {
-        try {
-            allProducts = await Api.call('list_products');
-            renderProductList(el('products-list-search').value.trim());
-        } catch (err) {
-            Toast.error(err.message);
         }
     }
 
@@ -209,22 +162,7 @@ const ProductsPage = (() => {
             ScannerFocus.refocus();
         });
 
-        el('products-list-search').addEventListener('input', (e) => renderProductList(e.target.value.trim()));
-        el('products-list-body').addEventListener('click', (e) => {
-            const btn = e.target.closest('.edit-product-btn');
-            if (!btn) return;
-            const barcode = btn.dataset.barcode;
-            if (!barcode) {
-                Toast.warn('ئەم کاڵایە بارکۆدی نییە');
-                return;
-            }
-            el('add-barcode-input').value = barcode;
-            lookupBarcode(barcode);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-
         resetForm();
-        loadProductList();
     }
 
     function destroy() {
