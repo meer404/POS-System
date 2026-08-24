@@ -375,7 +375,7 @@ const PosPage = (() => {
             </div>
             <div class="form-group mt-10">
                 <label>پارەی وەرگیراو لە کڕیار</label>
-                <input type="number" id="change-received-input" min="0" value="0" class="input-lg" />
+                <input type="text" id="change-received-input" value="0" class="input-lg" />
             </div>
             <div class="change-denoms mt-10">
                 ${CHANGE_DENOMINATIONS.map(
@@ -398,6 +398,7 @@ const PosPage = (() => {
 
         const receivedInput = overlay.querySelector('#change-received-input');
         const resultEl = overlay.querySelector('#change-result');
+        NumericInput.bind(receivedInput);
 
         function updateResult() {
             const received = parseInt(receivedInput.value, 10) || 0;
@@ -438,6 +439,8 @@ const PosPage = (() => {
     function init() {
         const barcodeInput = el('pos-barcode-input');
         ScannerFocus.bind(barcodeInput);
+        NumericInput.bind(barcodeInput);
+        NumericInput.bind(el('discount-value'));
 
         barcodeInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {

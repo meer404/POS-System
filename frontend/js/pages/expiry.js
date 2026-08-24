@@ -28,13 +28,14 @@ const ExpiryPage = (() => {
                 <p class="text-muted">"${name}" — زۆرترین بڕ: ${formatNumber(max)}</p>
                 <div class="form-group mt-10">
                     <label>بڕ</label>
-                    <input type="number" id="qty-prompt-input" min="1" max="${max}" value="${max}" />
+                    <input type="text" id="qty-prompt-input" value="${max}" />
                 </div>
                 <div class="modal-actions">
                     <button class="btn btn-outline" id="qty-prompt-cancel">پاشگەزبوونەوە</button>
                     <button class="btn btn-primary" id="qty-prompt-confirm">دڵنیام</button>
                 </div>
             `);
+            NumericInput.bind(overlay.querySelector('#qty-prompt-input'));
             overlay.querySelector('#qty-prompt-cancel').addEventListener('click', () => {
                 Modal.close(overlay);
                 resolve(null);

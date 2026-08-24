@@ -19,10 +19,10 @@ const ReturnsPage = (() => {
         <tr data-product-id="${item.product_id}">
             <td class="cell-name">${item.name}</td>
             <td>
-                <input type="number" class="qty-input" data-id="${item.product_id}" min="1" value="${item.quantity}" />
+                <input type="text" class="qty-input" data-id="${item.product_id}" value="${item.quantity}" />
             </td>
             <td>
-                <input type="number" class="refund-input" data-id="${item.product_id}" min="0" value="${item.refund_amount}" />
+                <input type="text" class="refund-input" data-id="${item.product_id}" value="${item.refund_amount}" />
             </td>
             <td>
                 <button class="btn btn-icon btn-ghost item-remove" data-id="${item.product_id}" title="سڕینەوە">
@@ -45,6 +45,7 @@ const ReturnsPage = (() => {
             empty.classList.add('hidden');
             card.querySelector('.table-wrap').classList.remove('hidden');
             body.innerHTML = returnList.map(rowHtml).join('');
+            body.querySelectorAll('.qty-input, .refund-input').forEach(NumericInput.bind);
         }
         updateTotal();
     }
@@ -196,6 +197,7 @@ const ReturnsPage = (() => {
         returnList = [];
         const barcodeInput = el('returns-barcode-input');
         ScannerFocus.bind(barcodeInput);
+        NumericInput.bind(barcodeInput);
 
         barcodeInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {

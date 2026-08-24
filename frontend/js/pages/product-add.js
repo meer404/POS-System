@@ -139,6 +139,11 @@ const ProductAddPage = (() => {
     function init() {
         const barcodeInput = el('add-barcode-input');
         ScannerFocus.bind(barcodeInput);
+        NumericInput.bind(barcodeInput);
+        NumericInput.bind(el('f-sale-price'));
+        NumericInput.bind(el('f-min-stock'));
+        NumericInput.bind(el('f-purchase-price'));
+        NumericInput.bind(el('f-quantity'));
 
         barcodeInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {

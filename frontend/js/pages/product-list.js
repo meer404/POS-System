@@ -147,13 +147,13 @@ const ProductListPage = (() => {
                     </div>
                     <div class="form-group">
                         <label>کەمترین بڕی کۆگا</label>
-                        <input type="number" id="edit-min-stock" min="0" value="${product.min_stock}" />
+                        <input type="text" id="edit-min-stock" value="${product.min_stock}" />
                     </div>
                     ${
                         isAdmin
                             ? `<div class="form-group">
                         <label>نرخی فرۆشتن (د.ع)</label>
-                        <input type="number" id="edit-sale-price" min="0" value="${product.sale_price}" />
+                        <input type="text" id="edit-sale-price" value="${product.sale_price}" />
                     </div>`
                             : ''
                     }
@@ -165,6 +165,11 @@ const ProductListPage = (() => {
             `,
                 { wide: true }
             );
+
+            NumericInput.bind(overlay.querySelector('#edit-barcode'));
+            NumericInput.bind(overlay.querySelector('#edit-min-stock'));
+            const editSalePrice = overlay.querySelector('#edit-sale-price');
+            if (editSalePrice) NumericInput.bind(editSalePrice);
 
             overlay.querySelector('#edit-product-cancel').addEventListener('click', () => {
                 Modal.close(overlay);
