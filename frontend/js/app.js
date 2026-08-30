@@ -105,6 +105,13 @@ async function boot() {
     document.getElementById('login-form').addEventListener('submit', handleLogin);
     document.getElementById('logout-btn').addEventListener('click', handleLogout);
 
+    const footerLogo = document.getElementById('app-footer-logo');
+    if (footerLogo) {
+        footerLogo.addEventListener('click', () => {
+            Api.call('open_external_url', 'https://mir.codes').catch(() => {});
+        });
+    }
+
     await Api.ready();
     const user = await Api.call('get_current_user');
     if (user) {

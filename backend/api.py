@@ -326,3 +326,21 @@ class JSApi:
         self.conn = new_conn
         session.clear_current_user()  # force re-login; users table changed
         return _ok({"restored": True})
+
+    # ---------------- Misc ----------------
+
+    @require_role("admin", "cashier")
+    def open_external_url(self, url: str) -> dict:
+        """Hand a whitelisted URL to the OS default browser (used by the
+        footer credit link). The app itself makes no network call."""
+        from urllib.parse import urlparse
+
+        parsed = urlparse(url or "")
+        host = parsed.hostname or ""
+        if parsed.scheme != "https" or (host != "mir.codes" and not host.endswith(".mir.codes")):
+            return _err("VALIDATION_ERROR", "بەستەرەکە ڕێگەپێدراو نییە")
+
+        import webbrowser
+
+        webbrowser.open(url)
+        return _ok()
