@@ -7,6 +7,7 @@ import webview
 
 from backend import db, seed
 from backend.api import JSApi
+from backend.license import check_license
 
 # Static assets (frontend/) are read-only and ship inside the PyInstaller
 # bundle (sys._MEIPASS), which differs from the writable data/ location
@@ -22,6 +23,8 @@ def frontend_path(*parts: str) -> str:
 
 
 def main() -> None:
+    check_license()          # ── machine-lock: exits immediately if not licensed
+
     conn = db.get_connection()
     db.init_db(conn)
     seed.ensure_default_admin(conn)
