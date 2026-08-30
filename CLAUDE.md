@@ -87,6 +87,12 @@ Every `created_at`/`received_at` column defaults to SQLite's `CURRENT_TIMESTAMP`
 
 `CREATE TABLE IF NOT EXISTS` (in `db.py::SCHEMA_STATEMENTS`) is a no-op on a database that already has the table — it does **not** add new columns to existing installs. The customer-return feature above needed two new columns on an already-shipped `returns` table, so `db.py::_migrate_returns_table` (called from `init_db`) is the project's first real migration: it checks `PRAGMA table_info(returns)` and runs `ALTER TABLE ... ADD COLUMN` for whatever's missing. If you need to change an existing table's shape again, follow this pattern — add to `RETURNS_TABLE_MIGRATIONS` (or a new equivalent list) rather than editing the `CREATE TABLE` statement and assuming it reaches existing `store.db` files.
 
+### Backup & restore
+
+`backend/backup.py` is admin-only (page route `#/backup`, `frontend/js/pages/backup.js`). `create_backup` snapshots the DB with `sqlite3.Connection.backup()` (WAL-safe, one consistent file) into `data/backups/pos-backup-<ts>.db`, and optionally also copies it to a path the user picks via a native Save dialog. `restore_backup` validates the incoming file (`PRAGMA integrity_check` + `REQUIRED_TABLES` present), writes a `data/backups/pre-restore-<ts>.db` safety snapshot, `conn.close()`s the live connection, deletes the `-wal`/`-shm` sidecars, `os.replace`s `store.db`, then reopens and runs `db.init_db` (so an older-schema backup gets migrated).
+
+Two things make restore unusual: (1) it is **the only place `JSApi.conn` is reassigned** after construction — `JSApi.restore_backup` sets `self.conn = new_conn` and calls `session.clear_current_user()` to force a re-login (the `users` table just changed under the session). (2) It needs a pywebview window handle for the native file dialogs, so `main.py` now keeps the `create_window(...)` return value and sets `api._window = window` before `webview.start()`. The attribute **must** stay underscore-prefixed — a public attr holding the native window makes pywebview's `js_api` introspection recurse into the .NET form object and hit the recursion limit. `JSApi` also lazily `import webview` only inside the dialog methods so the module stays importable in tests without a running GUI.
+
 ### Known, deliberate scope limits
 
 Not gaps — see `README.md`'s "Known limitations" for the full list: no sale voiding, no user deactivation/deletion (would break `sales.cashier_id` FK).

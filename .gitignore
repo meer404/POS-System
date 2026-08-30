@@ -5,6 +5,7 @@ __pycache__/
 data/store.db
 data/store.db-wal
 data/store.db-shm
+data/backups/
 build/
 dist/
 *.spec.bak

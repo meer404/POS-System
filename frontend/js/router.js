@@ -9,6 +9,7 @@ const MENU = [
     { route: 'reports', label: 'ڕاپۆرت', icon: 'bar-chart-line', roles: ['admin'] },
     { route: 'expiry', label: 'بەسەرچوون', icon: 'clock-history', roles: ['admin'] },
     { route: 'users', label: 'بەکارهێنەران', icon: 'people', roles: ['admin'] },
+    { route: 'backup', label: 'باکاپ', icon: 'hdd', roles: ['admin'] },
 ];
 
 const PAGE_TITLES = {
@@ -20,6 +21,7 @@ const PAGE_TITLES = {
     reports: 'ڕاپۆرت',
     expiry: 'بەسەرچوونی کاڵا',
     users: 'بەکارهێنەران',
+    backup: 'باکاپ و گەڕاندنەوە',
 };
 
 const PAGE_MODULES = {
@@ -31,6 +33,7 @@ const PAGE_MODULES = {
     reports: () => ReportsPage,
     expiry: () => ExpiryPage,
     users: () => UsersPage,
+    backup: () => BackupPage,
 };
 
 const Router = (() => {

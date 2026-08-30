@@ -1,0 +1,49 @@
+<div class="card" style="margin-bottom: 20px;">
+    <div class="card-title">
+        <img class="icon" src="assets/icons/hdd.svg" alt="" />
+        دروستکردنی باکاپ
+    </div>
+    <p class="text-muted">
+        هەموو داتاکانی سیستەم (کاڵا، فرۆشتن، بەکارهێنەران) لە یەک فایلدا پاشەکەوت دەکرێت.
+        وێنەیەک بە شێوەی خۆکار لە بوخچەی <code>data/backups</code> دەمێنێتەوە، هەروەها
+        دەتوانیت وێنەیەکیش بۆ فلاش یان دیسکی دەرەکی پاشەکەوت بکەیت.
+    </p>
+    <button id="create-backup-btn" class="btn btn-primary">
+        <img class="icon" src="assets/icons/hdd.svg" alt="" /> دروستکردنی باکاپ
+    </button>
+</div>
+
+<div class="card" style="margin-bottom: 20px;">
+    <div class="card-title">
+        <img class="icon" src="assets/icons/exclamation-triangle.svg" alt="" />
+        گەڕاندنەوەی باکاپ لە فایل
+    </div>
+    <p class="text-muted">
+        ئاگاداری: گەڕاندنەوە هەموو داتای ئێستای سیستەم دەگۆڕێت بە داتای ناو فایلی باکاپ.
+        پێش گەڕاندنەوە وێنەیەک لە داتای ئێستا پاشەکەوت دەکرێت. دوای گەڕاندنەوە پێویستە
+        دووبارە بچیتەوە ژوورەوە.
+    </p>
+    <button id="restore-file-btn" class="btn btn-outline">
+        <img class="icon" src="assets/icons/box-arrow-in-right.svg" alt="" /> هەڵبژاردنی فایل و گەڕاندنەوە
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-title">
+        <img class="icon" src="assets/icons/hdd.svg" alt="" />
+        باکاپە خۆکارەکان
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ناوی فایل</th>
+                    <th>قەبارە</th>
+                    <th>بەروار</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="backups-list-body"></tbody>
+        </table>
+    </div>
+</div>

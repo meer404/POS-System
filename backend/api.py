@@ -8,7 +8,7 @@ UX only and must never be trusted for security.
 """
 import sqlite3
 
-from backend import auth, expiry, products, reports, session, users
+from backend import auth, backup, expiry, products, reports, session, users
 from backend.sales import InsufficientStockError
 from backend.sales import complete_sale as _complete_sale
 from backend.sales import get_cart_item_snapshot as _get_cart_item_snapshot
@@ -28,6 +28,10 @@ def _err(code: str, message: str = ""):
 class JSApi:
     def __init__(self, conn: sqlite3.Connection):
         self.conn = conn
+        # Underscore-prefixed so pywebview's js_api introspection ignores it
+        # (a public attr here makes pywebview try to serialize the whole
+        # native window object and blow the recursion limit).
+        self._window = None  # set from main.py; used for native file dialogs
 
     # ---------------- Auth ----------------
 
@@ -246,3 +250,69 @@ class JSApi:
             return _ok(users.reset_user_password(self.conn, int(user_id), new_password))
         except (ValueError, TypeError) as e:
             return _err("VALIDATION_ERROR", str(e))
+
+    # ---------------- Backup / restore (admin only) ----------------
+
+    @require_role("admin")
+    def list_backups(self) -> dict:
+        return _ok(backup.list_backups())
+
+    @require_role("admin")
+    def create_backup(self) -> dict:
+        export_path = None
+        if self._window is not None:
+            import webview
+
+            res = self._window.create_file_dialog(
+                webview.SAVE_DIALOG,
+                save_filename=backup.suggested_filename(),
+                file_types=("Backup fayl (*.db)",),
+            )
+            if res:
+                export_path = res if isinstance(res, str) else res[0]
+        try:
+            return _ok(backup.create_backup(self.conn, export_path))
+        except OSError as e:
+            return _err("BACKUP_FAILED", str(e))
+
+    @require_role("admin")
+    def restore_backup(self, admin_password: str, archive_name: str | None = None) -> dict:
+        user = session.get_current_user()
+        row = self.conn.execute(
+            "SELECT password_hash FROM users WHERE id = ?", (user["id"],)
+        ).fetchone()
+        if row is None or not auth.verify_password(admin_password, row["password_hash"]):
+            return _err("INVALID_CREDENTIALS", "وشەی نهێنی هەڵەیە")
+
+        if archive_name:
+            from pathlib import Path
+
+            if archive_name != Path(archive_name).name:
+                return _err("VALIDATION_ERROR", "ناوی فایل نادروستە")
+            source = str(backup.backups_dir() / archive_name)
+        elif self._window is not None:
+            import webview
+
+            res = self._window.create_file_dialog(
+                webview.OPEN_DIALOG,
+                allow_multiple=False,
+                file_types=("Backup fayl (*.db)",),
+            )
+            if not res:
+                source = None
+            else:
+                source = res if isinstance(res, str) else res[0]
+        else:
+            source = None
+        if not source:
+            return _err("CANCELLED", "هیچ فایلێک هەڵنەبژێردرا")
+
+        try:
+            new_conn = backup.restore_backup(self.conn, source)
+        except ValueError as e:
+            return _err("INVALID_BACKUP", str(e))
+        except OSError as e:
+            return _err("RESTORE_FAILED", str(e))
+        self.conn = new_conn
+        session.clear_current_user()  # force re-login; users table changed
+        return _ok({"restored": True})

@@ -61,7 +61,21 @@ If you seed demo data, an additional cashier account is created: username `cashi
 venv\Scripts\python -m pytest tests/ -v
 ```
 
-Covers: FIFO/nearest-expiry stock consumption, local barcode generation, report aggregation math, and role-based access enforcement.
+Covers: FIFO/nearest-expiry stock consumption, local barcode generation, report aggregation math, role-based access enforcement, and database backup/restore.
+
+## باکاپ و گەڕاندنەوە / Backup & restore
+
+بەڕێوەبەر لە پەڕەی **باکاپ** دەتوانێت وێنەیەکی تەواوی داتابەیس دروست بکات. هەموو
+باکاپێک بە شێوەی خۆکار لە `data\backups\` (تەنیشت فایلی `.exe`) پاشەکەوت دەکرێت،
+هەروەها دەکرێت وێنەیەک بۆ فلاش یان دیسکی دەرەکی هەڵبژێردرێت. گەڕاندنەوە داوای
+وشەی نهێنی بەڕێوەبەر دەکات، پێش گۆڕین وێنەیەک لە داتای ئێستا (`pre-restore-*.db`)
+پاشەکەوت دەکات، و دواتر داوا دەکات دووبارە بچیتەوە ژوورەوە.
+
+The admin-only **Backup** page snapshots the whole database via SQLite's online
+backup API (WAL-safe). Every backup is auto-kept in `data\backups\` next to the
+`.exe`; a native Save dialog can also drop a copy on a USB/external drive.
+Restore requires the admin's password, writes a `pre-restore-*.db` safety copy of
+the current data first, then swaps the file in and forces a re-login.
 
 ## پاکەجکردن بۆ .exe / Packaging to .exe
 

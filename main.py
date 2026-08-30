@@ -32,7 +32,7 @@ def main() -> None:
     api = JSApi(conn)
 
     debug = "--debug" in sys.argv
-    webview.create_window(
+    window = webview.create_window(
         "سیستەمی فرۆشتن",
         url=frontend_path("index.html"),
         js_api=api,
@@ -40,6 +40,7 @@ def main() -> None:
         height=800,
         min_size=(1024, 700),
     )
+    api._window = window  # enables native Save/Open dialogs for backup & restore
     webview.start(debug=debug)
 
 

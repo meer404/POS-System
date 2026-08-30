@@ -27,6 +27,9 @@ def test_cashier_forbidden_from_admin_only_methods(conn):
     assert api.get_report_summary(preset="today")["error"] == "FORBIDDEN"
     assert api.list_expired_batches()["error"] == "FORBIDDEN"
     assert api.list_users()["error"] == "FORBIDDEN"
+    assert api.list_backups()["error"] == "FORBIDDEN"
+    assert api.create_backup()["error"] == "FORBIDDEN"
+    assert api.restore_backup("x")["error"] == "FORBIDDEN"
     session.clear_current_user()
 
 
