@@ -43,7 +43,9 @@ One method, `update_product`, has a second, finer-grained check inside the metho
 
 ### The default `admin` account is protected
 
-`backend/users.py::is_protected_user(conn, user_id)` returns true for the single account whose username equals `seed.DEFAULT_ADMIN_USERNAME` (`"admin"`, created by `ensure_default_admin` on first run). `set_user_role` and `reset_user_password` raise `ValueError` (surfaced as `VALIDATION_ERROR`) when called against it, so no admin can demote the primary admin or reset its password from the Users page — the owner can still change their own password via `auth.change_password` / `force_change_password`. `list_users` adds a `"protected"` boolean per row so `frontend/js/pages/users.js` hides the action buttons. There is no user-delete path today; if one is ever added it must call `is_protected_user` first.
+`backend/users.py::is_protected_user(conn, user_id)` returns true for the single account whose username equals `seed.DEFAULT_ADMIN_USERNAME` (`"admin"`, created by `ensure_default_admin` on first run). `set_user_role`, `reset_user_password`, and `delete_user` raise `ValueError` (surfaced as `VALIDATION_ERROR`) when called against it, so no admin can demote the primary admin, reset its password, or delete it from the Users page — the owner can still change their own password via `auth.change_password` / `force_change_password`. `list_users` adds a `"protected"` boolean per row so `frontend/js/pages/users.js` hides the action buttons.
+
+`backend/users.py::delete_user` (→ `JSApi.delete_user`, `@require_role("admin")`) hard-`DELETE`s a user, but only when it's not the protected admin **and** has no `sales` rows (`sales.cashier_id` is an enforced FK, so deleting a cashier with history would fail / orphan reports). `JSApi.delete_user` also blocks deleting your own session account.
 
 ### Stock model: products vs. stock_batches, and FIFO consumption
 
@@ -99,7 +101,7 @@ Two things make restore unusual: (1) it is **the only place `JSApi.conn` is reas
 
 ### Known, deliberate scope limits
 
-Not gaps — see `README.md`'s "Known limitations" for the full list: no sale voiding, no user deactivation/deletion (would break `sales.cashier_id` FK).
+Not gaps — see `README.md`'s "Known limitations" for the full list: no sale voiding, no user deactivation, and user deletion is allowed only for accounts with no `sales` history (would otherwise break `sales.cashier_id` FK).
 
 ## Available imports
 

@@ -89,8 +89,8 @@ Output lands in `dist\POS-System\` — copy the **whole folder**, not just the .
 ## سنووردارییە زانراوەکان / Known limitations
 
 - No sale voiding/cancellation.
-- No user deactivation/deletion (only role changes and password resets), to avoid breaking historical sales' foreign-key references.
-- The default `admin` account is protected: its role can't be changed and its password can't be reset from the Users page by anyone (it can only change its own password via the normal self-service flow). It can't be deleted either.
+- No user deactivation. An admin can delete a user only if that user has no recorded sales (deleting one with sales would break `sales.cashier_id` foreign-key references); admins also can't delete their own account.
+- The default `admin` account is protected: its role can't be changed, its password can't be reset from the Users page by anyone (it can only change its own password via the normal self-service flow), and it can't be deleted.
 
 ## پێکهاتەی پڕۆژە / Project structure
 

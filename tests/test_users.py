@@ -69,3 +69,40 @@ def test_jsapi_rejects_changes_to_protected_admin(conn):
     assert api.set_user_role(protected_id, "cashier")["error"] == "VALIDATION_ERROR"
     assert api.reset_user_password(protected_id, "newpass")["error"] == "VALIDATION_ERROR"
     session.clear_current_user()
+
+
+def test_delete_user_removes_a_cashier_without_sales(conn):
+    cashier_id = _add_user(conn, "cashier1", role="cashier")
+    assert users.delete_user(conn, cashier_id) == {"ok": True}
+    assert conn.execute(
+        "SELECT 1 FROM users WHERE id = ?", (cashier_id,)
+    ).fetchone() is None
+
+
+def test_delete_user_blocked_for_protected_admin(conn):
+    protected_id = _add_user(conn, DEFAULT_ADMIN_USERNAME)
+    with pytest.raises(ValueError):
+        users.delete_user(conn, protected_id)
+
+
+def test_delete_user_blocked_when_user_has_sales(conn):
+    cashier_id = _add_user(conn, "cashier1", role="cashier")
+    conn.execute(
+        "INSERT INTO sales (total_amount, discount, final_amount, cashier_id) "
+        "VALUES (0, 0, 0, ?)",
+        (cashier_id,),
+    )
+    with pytest.raises(ValueError):
+        users.delete_user(conn, cashier_id)
+
+
+def test_jsapi_delete_user_flow(conn):
+    admin_id = _add_user(conn, DEFAULT_ADMIN_USERNAME)
+    cashier_id = _add_user(conn, "cashier1", role="cashier")
+    session.set_current_user({"id": admin_id, "username": DEFAULT_ADMIN_USERNAME, "role": "admin"})
+    api = JSApi(conn)
+
+    assert api.delete_user(admin_id)["error"] == "VALIDATION_ERROR"  # can't delete self
+    assert api.delete_user(cashier_id)["ok"] is True
+    assert api.delete_user(999)["error"] == "VALIDATION_ERROR"  # already gone / not found
+    session.clear_current_user()

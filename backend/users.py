@@ -76,6 +76,27 @@ def set_user_role(conn: sqlite3.Connection, user_id: int, role: str) -> dict:
     )
 
 
+def delete_user(conn: sqlite3.Connection, user_id: int) -> dict:
+    existing = conn.execute(
+        "SELECT id FROM users WHERE id = ?", (user_id,)
+    ).fetchone()
+    if existing is None:
+        raise ValueError("بەکارهێنەر نەدۆزرایەوە")
+    if is_protected_user(conn, user_id):
+        raise ValueError("ناتوانرێت بەڕێوەبەری سەرەکی بسڕدرێتەوە")
+
+    has_sales = conn.execute(
+        "SELECT 1 FROM sales WHERE cashier_id = ? LIMIT 1", (user_id,)
+    ).fetchone()
+    if has_sales is not None:
+        raise ValueError("ناتوانرێت ئەم بەکارهێنەرە بسڕدرێتەوە چونکە فرۆشتنی تۆمارکراوی هەیە")
+
+    with conn:
+        conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
+
+    return {"ok": True}
+
+
 def reset_user_password(conn: sqlite3.Connection, user_id: int, new_password: str) -> dict:
     if len(new_password) < 4:
         raise ValueError("وشەی نهێنی زۆر کورتە")

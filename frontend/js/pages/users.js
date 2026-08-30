@@ -18,6 +18,9 @@ const UsersPage = (() => {
                 </button>
                 <button class="btn btn-ghost btn-sm reset-pw-btn" data-id="${user.id}" data-name="${user.username}">
                     <img class="icon icon-sm" src="assets/icons/key.svg" alt="" /> ڕیسێتکردنی وشەی نهێنی
+                </button>
+                <button class="btn btn-ghost btn-sm delete-user-btn" data-id="${user.id}" data-name="${user.username}">
+                    <img class="icon icon-sm" src="assets/icons/trash.svg" alt="" /> سڕینەوە
                 </button>`;
         return `
         <tr data-user-id="${user.id}">
@@ -78,6 +81,22 @@ const UsersPage = (() => {
     async function handleTableClick(e) {
         const roleBtn = e.target.closest('.role-toggle-btn');
         const resetBtn = e.target.closest('.reset-pw-btn');
+        const deleteBtn = e.target.closest('.delete-user-btn');
+
+        if (deleteBtn) {
+            const userId = parseInt(deleteBtn.dataset.id, 10);
+            const username = deleteBtn.dataset.name;
+            const confirmed = await Modal.confirm(`بەکارهێنەری "${username}" بسڕدرێتەوە؟`);
+            if (!confirmed) return;
+            try {
+                await Api.call('delete_user', userId);
+                Toast.success('بەکارهێنەر سڕایەوە');
+                await loadUsers();
+            } catch (err) {
+                Toast.error(err.message);
+            }
+            return;
+        }
 
         if (roleBtn) {
             const userId = parseInt(roleBtn.dataset.id, 10);

@@ -251,6 +251,16 @@ class JSApi:
         except (ValueError, TypeError) as e:
             return _err("VALIDATION_ERROR", str(e))
 
+    @require_role("admin")
+    def delete_user(self, user_id: int) -> dict:
+        current = session.get_current_user()
+        if current is not None and current["id"] == int(user_id):
+            return _err("VALIDATION_ERROR", "ناتوانیت هەژماری خۆت بسڕیتەوە")
+        try:
+            return _ok(users.delete_user(self.conn, int(user_id)))
+        except (ValueError, TypeError) as e:
+            return _err("VALIDATION_ERROR", str(e))
+
     # ---------------- Backup / restore (admin only) ----------------
 
     @require_role("admin")
