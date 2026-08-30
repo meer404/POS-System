@@ -101,7 +101,7 @@ Two things make restore unusual: (1) it is **the only place `JSApi.conn` is reas
 
 ### Known, deliberate scope limits
 
-Not gaps — see `README.md`'s "Known limitations" for the full list: no sale voiding, no user deactivation, and user deletion is allowed only for accounts with no `sales` history (would otherwise break `sales.cashier_id` FK).
+Not gaps — see `README.md`'s "Known limitations" for the full list: no sale voiding, no user deactivation, and user deletion is allowed only for accounts with no `sales` history (would otherwise break `sales.cashier_id` FK). `backend/products.py::delete_product` (→ `JSApi.delete_product`, `@require_role("admin")`, admin-only unlike create/edit) follows the same rule: it hard-`DELETE`s the product and its `stock_batches`, but only when no `sale_items` and no `returns` rows reference the product or its batches. Surfaced on the product list page (`frontend/js/pages/product-list.js`), where the delete button renders only for `State.isAdmin()`.
 
 ## Available imports
 

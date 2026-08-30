@@ -38,6 +38,7 @@ const ProductListPage = (() => {
             return;
         }
 
+        const isAdmin = State.isAdmin();
         body.innerHTML = filtered
             .map((p) => {
                 const low = p.stock_qty <= p.min_stock;
@@ -52,6 +53,13 @@ const ProductListPage = (() => {
                         <button class="btn btn-ghost btn-sm edit-product-btn" data-id="${p.id}">
                             <img class="icon icon-sm" src="assets/icons/pencil-square.svg" alt="" /> دەستکاری
                         </button>
+                        ${
+                            isAdmin
+                                ? `<button class="btn btn-ghost btn-sm delete-product-btn" data-id="${p.id}" data-name="${p.name}">
+                            <img class="icon icon-sm" src="assets/icons/trash.svg" alt="" /> سڕینەوە
+                        </button>`
+                                : ''
+                        }
                     </td>
                 </tr>`;
             })
@@ -203,10 +211,27 @@ const ProductListPage = (() => {
         }
     }
 
+    async function handleDeleteProduct(productId, productName) {
+        const confirmed = await Modal.confirm(`کاڵای "${productName}" بسڕدرێتەوە؟`);
+        if (!confirmed) return;
+        try {
+            await Api.call('delete_product', productId);
+            Toast.success('کاڵا سڕایەوە');
+            await loadProductList();
+        } catch (err) {
+            Toast.error(err.message);
+        }
+    }
+
     function handleTableClick(e) {
         const editBtn = e.target.closest('.edit-product-btn');
         if (editBtn) {
             openEditProductModal(parseInt(editBtn.dataset.id, 10));
+            return;
+        }
+        const deleteBtn = e.target.closest('.delete-product-btn');
+        if (deleteBtn) {
+            handleDeleteProduct(parseInt(deleteBtn.dataset.id, 10), deleteBtn.dataset.name);
             return;
         }
         const row = e.target.closest('tr[data-id]');

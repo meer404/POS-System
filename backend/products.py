@@ -214,3 +214,39 @@ def update_product(
             conn.execute(f"UPDATE products SET {', '.join(fields)} WHERE id = ?", values)
 
     return get_product_with_batches(conn, product_id)
+
+
+def delete_product(conn: sqlite3.Connection, product_id: int) -> dict:
+    """Hard-delete a product and its stock batches.
+
+    Refused when the product has any sales or returns history: `sale_items`
+    (product_id + batch_id) and `returns` (product_id + batch_id) both carry
+    enforced FKs, so deleting a product with history would fail or orphan
+    reports. A product with no history just has catalog + batch rows.
+    """
+    existing = conn.execute("SELECT 1 FROM products WHERE id = ?", (product_id,)).fetchone()
+    if existing is None:
+        raise ValueError("کاڵاکە نەدۆزرایەوە")
+
+    sold = conn.execute(
+        "SELECT 1 FROM sale_items WHERE product_id = ? LIMIT 1", (product_id,)
+    ).fetchone()
+    if sold is not None:
+        raise ValueError("ناتوانرێت ئەم کاڵایە بسڕدرێتەوە چونکە مێژووی فرۆشتنی هەیە")
+
+    returned = conn.execute(
+        """
+        SELECT 1 FROM returns
+        WHERE product_id = ?
+           OR batch_id IN (SELECT id FROM stock_batches WHERE product_id = ?)
+        LIMIT 1
+        """,
+        (product_id, product_id),
+    ).fetchone()
+    if returned is not None:
+        raise ValueError("ناتوانرێت ئەم کاڵایە بسڕدرێتەوە چونکە مێژووی گەڕاندنەوەی هەیە")
+
+    with conn:
+        conn.execute("DELETE FROM stock_batches WHERE product_id = ?", (product_id,))
+        conn.execute("DELETE FROM products WHERE id = ?", (product_id,))
+    return {"ok": True}

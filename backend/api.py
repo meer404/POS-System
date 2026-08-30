@@ -141,6 +141,13 @@ class JSApi:
         except (ValueError, TypeError) as e:
             return _err("VALIDATION_ERROR", str(e))
 
+    @require_role("admin")
+    def delete_product(self, product_id: int) -> dict:
+        try:
+            return _ok(products.delete_product(self.conn, int(product_id)))
+        except (ValueError, TypeError) as e:
+            return _err("VALIDATION_ERROR", str(e))
+
     # ---------------- Sales ----------------
 
     @require_role("admin", "cashier")

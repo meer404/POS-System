@@ -89,6 +89,7 @@ Output lands in `dist\POS-System\` — copy the **whole folder**, not just the .
 ## سنووردارییە زانراوەکان / Known limitations
 
 - No sale voiding/cancellation.
+- Product deletion (admin only) is allowed only for products with no sales or returns history (deleting one with history would break `sale_items` / `returns` foreign-key references). Restock mistakes on a product that has already sold should be fixed by editing the product / adding a corrected batch, not by deletion.
 - No user deactivation. An admin can delete a user only if that user has no recorded sales (deleting one with sales would break `sales.cashier_id` foreign-key references); admins also can't delete their own account.
 - The default `admin` account is protected: its role can't be changed, its password can't be reset from the Users page by anyone (it can only change its own password via the normal self-service flow), and it can't be deleted.
 
