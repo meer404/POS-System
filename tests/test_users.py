@@ -24,6 +24,36 @@ def test_list_users_flags_default_admin_as_protected(conn):
     assert by_name["cashier1"]["protected"] is False
 
 
+def test_created_cashier_is_not_forced_to_change_password(conn):
+    cashier = users.create_user(conn, "cashier1", "temp123", "cashier")
+    assert cashier["force_password_change"] == 0
+
+
+def test_created_admin_is_forced_to_change_password(conn):
+    admin = users.create_user(conn, "admin2", "temp123", "admin")
+    assert admin["force_password_change"] == 1
+
+
+def test_init_db_clears_stale_cashier_force_change_flag(conn):
+    from backend import db
+
+    conn.execute(
+        "INSERT INTO users (username, password_hash, role, force_password_change) "
+        "VALUES ('oldcashier', 'x', 'cashier', 1)"
+    )
+    conn.execute(
+        "INSERT INTO users (username, password_hash, role, force_password_change) "
+        "VALUES ('oldadmin', 'x', 'admin', 1)"
+    )
+    db.init_db(conn)
+
+    rows = {r["username"]: r["force_password_change"] for r in conn.execute(
+        "SELECT username, force_password_change FROM users"
+    )}
+    assert rows["oldcashier"] == 0
+    assert rows["oldadmin"] == 1
+
+
 def test_is_protected_user(conn):
     protected_id = _add_user(conn, DEFAULT_ADMIN_USERNAME)
     other_id = _add_user(conn, "admin2")

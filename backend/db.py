@@ -141,6 +141,12 @@ def init_db(conn: sqlite3.Connection) -> None:
         for statement in SCHEMA_STATEMENTS:
             conn.execute(statement)
         _migrate_returns_table(conn)
+        # Cashiers are no longer forced to change their password on first login;
+        # clear the flag for any cashier rows created under the old behavior.
+        conn.execute(
+            "UPDATE users SET force_password_change = 0 "
+            "WHERE role = 'cashier' AND force_password_change = 1"
+        )
         row = conn.execute("SELECT version FROM schema_version WHERE id = 1").fetchone()
         if row is None:
             conn.execute(

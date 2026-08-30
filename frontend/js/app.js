@@ -78,7 +78,9 @@ async function handleLogin(e) {
         const user = await Api.call('login', username, password);
         State.currentUser = user;
         await showAppShell();
-        if (user.force_password_change) {
+        // Only admins ever see the forced password-change popup; cashiers keep
+        // whatever password the admin set for them.
+        if (user.force_password_change && user.role === 'admin') {
             openForcePasswordChangeModal();
         }
     } catch (err) {

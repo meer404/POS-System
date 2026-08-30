@@ -40,11 +40,15 @@ def create_user(conn: sqlite3.Connection, username: str, password: str, role: st
     if existing is not None:
         raise ValueError("ئەم ناوە پێشتر بەکارهاتووە")
 
+    # Only admins are forced to change their password on first login; a cashier
+    # keeps the password the admin set for them (no forced-change modal).
+    force_change = 1 if role == "admin" else 0
+
     with conn:
         cur = conn.execute(
             "INSERT INTO users (username, password_hash, role, force_password_change) "
-            "VALUES (?, ?, ?, 1)",
-            (username.strip(), hash_password(password), role),
+            "VALUES (?, ?, ?, ?)",
+            (username.strip(), hash_password(password), role, force_change),
         )
         user_id = cur.lastrowid
 

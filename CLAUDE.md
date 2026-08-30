@@ -27,7 +27,7 @@ venv\Scripts\pyinstaller build.spec --noconfirm
 # output: dist/POS-System/  — must ship the WHOLE folder, not just the .exe
 ```
 
-Default login after first run: `admin` / `admin123` (forces a password change on first login, via `users.force_password_change`). `--seed` additionally creates `cashier` / `cashier123`.
+Default login after first run: `admin` / `admin123` (forces a password change on first login, via the `users.force_password_change` column). `--seed` additionally creates `cashier` / `cashier123`. Only **admin**-role accounts get the forced-first-login password change — `users.create_user` sets `force_password_change=1` for admins and `0` for cashiers, `db.init_db` clears any stale `1` left on existing cashier rows, and `frontend/js/app.js`'s login flow only opens the forced-change modal when `user.role === 'admin'` (so a cashier never sees it even if the flag is set, e.g. right after an admin password reset).
 
 ## Architecture
 
