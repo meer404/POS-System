@@ -41,6 +41,10 @@ The entire frontend talks to Python through exactly one object: `backend/api.py`
 
 One method, `update_product`, has a second, finer-grained check inside the method body: cashiers may create/edit products but not change `sale_price`, so `JSApi.update_product` inspects the payload for a `sale_price` key and rejects it for non-admins even though the method itself is `@require_role("admin", "cashier")`.
 
+### The default `admin` account is protected
+
+`backend/users.py::is_protected_user(conn, user_id)` returns true for the single account whose username equals `seed.DEFAULT_ADMIN_USERNAME` (`"admin"`, created by `ensure_default_admin` on first run). `set_user_role` and `reset_user_password` raise `ValueError` (surfaced as `VALIDATION_ERROR`) when called against it, so no admin can demote the primary admin or reset its password from the Users page — the owner can still change their own password via `auth.change_password` / `force_change_password`. `list_users` adds a `"protected"` boolean per row so `frontend/js/pages/users.js` hides the action buttons. There is no user-delete path today; if one is ever added it must call `is_protected_user` first.
+
 ### Stock model: products vs. stock_batches, and FIFO consumption
 
 `products` holds catalog data (name, barcode, sale_price, category, unit, min_stock) but never purchase price, quantity, or expiry — those live per-batch in `stock_batches`, because the same product can be restocked at different prices/expiry dates over time. Scanning a barcode that already exists never overwrites the old `purchase_price`; it inserts a new batch (`backend/products.py::add_stock_batch`).

@@ -2,14 +2,28 @@
 import sqlite3
 
 from backend.auth import hash_password
+from backend.seed import DEFAULT_ADMIN_USERNAME
 from backend.utils import row_to_dict, rows_to_list
+
+
+def is_protected_user(conn: sqlite3.Connection, user_id: int) -> bool:
+    """The default `admin` account is protected: its role can't be changed, its
+    password can't be reset by another user, and it can't be deleted. Any future
+    user-delete path must call this first."""
+    row = conn.execute(
+        "SELECT username FROM users WHERE id = ?", (user_id,)
+    ).fetchone()
+    return row is not None and row["username"] == DEFAULT_ADMIN_USERNAME
 
 
 def list_users(conn: sqlite3.Connection) -> list[dict]:
     rows = conn.execute(
         "SELECT id, username, role, force_password_change, created_at FROM users ORDER BY username"
     ).fetchall()
-    return rows_to_list(rows)
+    users = rows_to_list(rows)
+    for user in users:
+        user["protected"] = user["username"] == DEFAULT_ADMIN_USERNAME
+    return users
 
 
 def create_user(conn: sqlite3.Connection, username: str, password: str, role: str) -> dict:
@@ -48,6 +62,8 @@ def set_user_role(conn: sqlite3.Connection, user_id: int, role: str) -> dict:
     existing = conn.execute("SELECT id FROM users WHERE id = ?", (user_id,)).fetchone()
     if existing is None:
         raise ValueError("بەکارهێنەر نەدۆزرایەوە")
+    if is_protected_user(conn, user_id):
+        raise ValueError("ناتوانرێت ڕۆڵی بەڕێوەبەری سەرەکی بگۆڕدرێت")
 
     with conn:
         conn.execute("UPDATE users SET role = ? WHERE id = ?", (role, user_id))
@@ -66,6 +82,8 @@ def reset_user_password(conn: sqlite3.Connection, user_id: int, new_password: st
     existing = conn.execute("SELECT id FROM users WHERE id = ?", (user_id,)).fetchone()
     if existing is None:
         raise ValueError("بەکارهێنەر نەدۆزرایەوە")
+    if is_protected_user(conn, user_id):
+        raise ValueError("ناتوانرێت وشەی نهێنی بەڕێوەبەری سەرەکی ڕیسێت بکرێت")
 
     with conn:
         conn.execute(

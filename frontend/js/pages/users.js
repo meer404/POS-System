@@ -7,19 +7,24 @@ const UsersPage = (() => {
         const roleLabel = user.role === 'admin' ? 'بەڕێوەبەر' : 'فرۆشیار';
         const otherRole = user.role === 'admin' ? 'cashier' : 'admin';
         const otherRoleLabel = user.role === 'admin' ? 'فرۆشیار' : 'بەڕێوەبەر';
-        return `
-        <tr data-user-id="${user.id}">
-            <td class="text-bold">${user.username}</td>
-            <td><span class="badge ${user.role === 'admin' ? 'badge-primary' : 'badge-neutral'}">${roleLabel}</span></td>
-            <td>${formatDate(user.created_at)}</td>
-            <td class="flex gap-6">
+        const roleCell = user.protected
+            ? `<span class="badge badge-primary">${roleLabel}</span> <span class="badge badge-neutral">پارێزراو</span>`
+            : `<span class="badge ${user.role === 'admin' ? 'badge-primary' : 'badge-neutral'}">${roleLabel}</span>`;
+        const actionsCell = user.protected
+            ? `<span class="text-muted">پارێزراوە</span>`
+            : `
                 <button class="btn btn-outline btn-sm role-toggle-btn" data-id="${user.id}" data-role="${otherRole}">
                     گۆڕین بۆ ${otherRoleLabel}
                 </button>
                 <button class="btn btn-ghost btn-sm reset-pw-btn" data-id="${user.id}" data-name="${user.username}">
                     <img class="icon icon-sm" src="assets/icons/key.svg" alt="" /> ڕیسێتکردنی وشەی نهێنی
-                </button>
-            </td>
+                </button>`;
+        return `
+        <tr data-user-id="${user.id}">
+            <td class="text-bold">${user.username}</td>
+            <td>${roleCell}</td>
+            <td>${formatDate(user.created_at)}</td>
+            <td class="flex gap-6">${actionsCell}</td>
         </tr>`;
     }
 

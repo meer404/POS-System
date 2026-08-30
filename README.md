@@ -90,6 +90,7 @@ Output lands in `dist\POS-System\` — copy the **whole folder**, not just the .
 
 - No sale voiding/cancellation.
 - No user deactivation/deletion (only role changes and password resets), to avoid breaking historical sales' foreign-key references.
+- The default `admin` account is protected: its role can't be changed and its password can't be reset from the Users page by anyone (it can only change its own password via the normal self-service flow). It can't be deleted either.
 
 ## پێکهاتەی پڕۆژە / Project structure
 
